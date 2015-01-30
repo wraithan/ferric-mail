@@ -3,14 +3,14 @@ fn main() {
     // normal compile for now. Eventually this will actually start the server
     // and such.
     match parse_message(break_line("HELO relay.example.org")) {
-        Some(msg) => println!("Got {} from {}", msg.command, msg.arguments),
+        Some(msg) => println!("Got {} from {}", msg.command, msg.arguments[0]),
         None => println!("got nothing?")
     }
     println!("hello world");
 }
 
 fn break_line(input: &str) -> Vec<String> {
-    return input.split(' ').map(|s| s.to_string()).collect();
+    return input.split(' ').map(|s| String::from_str(s)).collect();
 }
 
 struct Message {
@@ -19,15 +19,14 @@ struct Message {
 }
 
 fn parse_message(mut input: Vec<String>) -> Option<Message> {
-    match input.swap_remove(0) {
-        Some(command) => {
-            return Some(Message {
-                command: command.to_string(),
-                arguments: input
-            })
-        },
-        None => return None
+    if (input.len() > 0) {
+        let command = input.swap_remove(0);
+        return Some(Message {
+            command: command,
+            arguments: input
+        })
     }
+    return None;
 }
 
 #[test]
@@ -39,7 +38,7 @@ fn main_basic() {
 fn break_line_basic() {
     assert_eq!(
         break_line("HELO relay.example.org"),
-        vec!["HELO".to_string(), "relay.example.org".to_string()]
+        vec![String::from_str("HELO"), String::from_str("relay.example.org")]
     )
 }
 
@@ -79,7 +78,7 @@ fn parse_message_only_command() {
 fn parse_message_empty_vector() {
     match parse_message(vec![]) {
         Some(msg) => {
-            println!("Got {},{} in unreachable branch", msg.command, msg.arguments);
+            println!("Got {},{} in unreachable branch", msg.command, msg.arguments[0]);
             unreachable!();
         },
         None => {}
